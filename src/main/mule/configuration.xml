@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<file:config name="File_Config" doc:name="File Config" doc:id="95cd3737-62c7-4fa1-a342-76c00fd568f2" />
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="9abbdca4-29c1-44a9-879a-bbd2a6ff92a7" >
+		<db:my-sql-connection host="localhost" port="3306" user="admin" password="admin" database="mule" >
+			<db:connection-properties >
+				<db:connection-property key="verifyServerCertificate" value="false" />
+				<db:connection-property key="useSSL" value="true" />
+			</db:connection-properties>
+		</db:my-sql-connection>
+	</db:config>
+	<http:listener-config name="HTTP_Listener_config1" doc:name="HTTP Listener config" doc:id="f0aa61bb-afbd-4c70-8c6f-45199e243fdb" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<db:config name="PostGresConnection" doc:name="Database Config" doc:id="d2a85537-f0bf-4573-aab4-c9730cd2c6d6" >
+		<db:generic-connection url="jdbc:postgresql://localhost:5432/postgres" driverClassName="org.postgresql.Driver" user="postgres" password="admin" />
+	</db:config>
+</mule>

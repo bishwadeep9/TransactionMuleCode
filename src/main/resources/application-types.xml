@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="mule" format="csv">
+      <types:shape format="weave" example="examples/TestBatch.csv"><![CDATA[%dw 2.0
+type mule = Array<{|
+  Address: String, 
+  Name: String, 
+  Quantity: String, 
+  Debit: String, 
+  Credit: String, 
+  Salary: String, 
+  Division: String, 
+  Store: String, 
+  Average_stic: String
+|}> {"MetadataFormat": "csv"}
+
+]]></types:shape>
+      <types:properties>
+        <types:property name="headerLineNumber" value="0"/>
+        <types:property name="header" value="true"/>
+        <types:property name="isQuotedString" value="false"/>
+        <types:property name="separator" value=","/>
+      </types:properties>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#032d92af-9c3a-498e-8f2f-c63f254fff74">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="mule"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

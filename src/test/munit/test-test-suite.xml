@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="test-test-suite.xml" />
+	<munit:test name="test-test-suite-testFlowTest" description="Test" doc:id="5cc2391a-0733-49e7-9415-173cee3526fc">
+		<munit:behavior >
+			<set-payload value="#[testdw::mockOutln::csvFile]" doc:name="Set Payload" doc:id="694d4b40-b0c5-4415-b701-60bdf4877217" />
+			<munit-tools:mock-when doc:name="Mock when" doc:id="26f5267a-f39f-4987-929b-864c82a47ac8" processor="file:On New or Updated File">
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('file/TestBatch.csv')]" mediaType="application/csv" encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="32ea90f6-c3b9-491d-8b27-23790908fbf0" processor="database:bulk insert"/>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="testFlow" doc:id="2b00330d-6692-4cfa-9ef5-7bfe914a8a17" name="testFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<logger level="INFO" doc:name="Logger" doc:id="e1462e40-2d8b-417a-b452-71f9708cbe47" message="Munit Test Started:::::::::::::"/>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="37938ce8-ee82-4317-bb9c-7b0e5cd31cca" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+			<logger level="INFO" doc:name="Logger" doc:id="c326d14a-d499-4f97-a3de-a12dd0c56cc4" message="Munit Test Completed"/>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="db_operationsFlow" doc:id="41694b70-1820-44d7-81fb-7c8d53f9c3fd" >
+		<db:listener table="financial_record" doc:name="On Table Row" doc:id="9f101403-a43f-4d6f-a4dd-5b923ede04be" config-ref="Database_Config" watermarkColumn="ID" idColumn="ID">
+			<scheduling-strategy >
+				<fixed-frequency />
+			</scheduling-strategy>
+		</db:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="59e2c2c2-8828-450b-a67b-7a5c81e4f561" message="DATA:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::;"/>
+		<logger level="INFO" doc:name="Logger" doc:id="da847779-f3b9-4e96-a392-4237e70a3a6d" message="#[attributes]"/>
+	</flow>
+	<flow name="select_db_operation" doc:id="1bf7ccc5-cbbc-444f-b64f-29702d4d7389" >
+		<http:listener doc:name="Listener" doc:id="c96d416a-cbdb-4d14-842c-4e7836365abb" config-ref="HTTP_Listener_config1" path="/select"/>
+		<set-variable value="Neola Schneider" doc:name="Set Variable" doc:id="72f0dcf2-fa74-42a3-a896-915182c4cb48" variableName="finName"/>
+		<set-variable value="#[10 as Number]" doc:name="limit" doc:id="642bdced-2b15-4e6d-b7aa-ef90e6789588" variableName="limit" />
+		<db:select doc:name="Select" doc:id="72de1bf0-d2db-4099-80b4-ce9738443efb" config-ref="Database_Config">
+			<db:sql >select count(*)  from financial_record</db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="37e049f8-18eb-4f3d-b009-c78890678611" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+
+var count = payload."count(*)" reduce ($)
+var listSize = ceil(count/vars.limit)
+
+fun prepareList(list: Array, listSize: Number) = if( sizeOf(list)>=listSize)
+list
+else prepareList(list ++ [(sizeOf(list) +1)], listSize)
+---
+
+prepareList([], listSize) as Array]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-variable value="#[0 as Number]" doc:name="offSet" doc:id="a40343a0-e715-4487-9408-5a0c7e058d3b" variableName="offSet"/>
+		<foreach doc:name="For Each" doc:id="d424b079-8ec7-437e-bda9-a9baf2fccfe4" >
+			<logger level="INFO" doc:name="Logger" doc:id="d16428fc-66b7-4fec-b5aa-3f24542f2eca" />
+			<db:select doc:name="Select" doc:id="865b3e39-61e0-49af-bfb1-7b4072ab4bc6" config-ref="Database_Config">
+				<db:sql >select * from financial_record LIMIT  :limit  OFFSET  :offSet ;</db:sql>
+				<db:input-parameters ><![CDATA[#[{
+'limit': vars.limit,
+'offSet' : vars.offSet
+}]]]></db:input-parameters>
+			</db:select>
+			<set-variable value="#[vars.offSet + vars.limit]" doc:name="Set Variable" doc:id="8bcf17d0-6fe7-4ad8-a12b-2e738a4dce72" variableName="offSet"/>
+		</foreach>
+		<logger level="INFO" doc:name="Logger" doc:id="62801871-22ed-417a-a4a2-c8b52dcb7892" message="#[%dw 2.0
+output application/json
+---
+payload]" />
+	</flow>
+	<flow name="db_update_operation" doc:id="1b82ac39-ddf2-489d-acd0-addc38bc542b" initialState="stopped">
+		<scheduler doc:name="Scheduler" doc:id="531c9a04-8536-4e7c-a976-ee6b622cbbb0" >
+			<scheduling-strategy >
+				<fixed-frequency />
+			</scheduling-strategy>
+		</scheduler>
+		<db:stored-procedure doc:name="Stored procedure" doc:id="d4da5a9e-7e26-4d2c-a7bc-d3c1df518f0c" config-ref="Database_Config">
+			<db:sql >CALL getDetaTagFromTable(:devision)</db:sql>
+			<db:input-parameters ><![CDATA[#[devision : 'Nunavut']]]></db:input-parameters>
+			<db:in-out-parameters />
+			<db:output-parameters />
+		</db:stored-procedure>
+		<logger level="INFO" doc:name="Logger" doc:id="68c5346d-0ae2-4972-bc49-d0e669e8a2cf" />
+	</flow>
+</mule>
